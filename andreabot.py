@@ -26,6 +26,13 @@ logging.captureWarnings(True)
 # TODO convert to persistent storage to enable bot reboot
 global announcements
 announcements = []
+global message_id
+message_id = 1
+
+# fingerprinter
+global announcementRead
+announcementRead = {
+}
 
 global message_id
 message_id = 1
@@ -92,13 +99,13 @@ def yell(message):
     # timestamp is pretty and human-readable, 12hr + date
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
 
-    # attach message ID
-    broadcast = 'Message ID. %d\n' % message_id
+    # append message ID
+    broadcast = 'Message ID: %d\n\n' % message_id
 
     # strip command word
     broadcast += re.sub('^/yell\s+', '', message.text)
 
-    # append byline
+    # append byline and pretty timestamp
     broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
     broadcast += '\n' + timestamp
 
@@ -113,15 +120,19 @@ def yell(message):
     # send to all recipients
     for recipient in getMailingList():
         try:
+            # successful send to recipient
             logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
             bot.send_message(recipient, broadcast)
             read[message_id][whoIs(recipient)] = False
         except Exception:
+            # failed to send to recipient
             logger.warn('Failed to yell at \'%s\'' % whoIs(recipient))
             failed += whoIs(recipient) + '\n'
             read[message_id][whoIs(recipient)] = 'Failed'
 
-    # feedback to sender about failed recipients
+    message_id += 1
+
+    # feedback to sender about failed recipients, if any
     if failed != '':
         bot.reply_to(message, '\nWARNING: yell did not reach the following people\n\n%s' % failed)
 
@@ -212,7 +223,7 @@ def read(message):
     /status <id>
     - returns acknowledgement status of message with ID <id>
 """
-@bot.message_handler(commands = ['status'])                                                  
+@bot.message_handler(commands = ['status'])
 def status(message):
     target_id = re.match('/status (\d+)', message.text).group(1)
 
@@ -263,6 +274,11 @@ def status(message):
 
     bot.reply_to(message, seen + '\n' + notseen + '\n' failed)
     return
+
+"""
+    /vlog
+    - prints every announcement sent
+"""
 
 logger.info('AndreaBot is listening ...')
 bot.polling()
