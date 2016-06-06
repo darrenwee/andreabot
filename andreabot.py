@@ -77,7 +77,7 @@ def yell(message):
     logMessage(message)
 
     # deny people who aren't in the mailing list from yelling
-    if message.from_user.id not in mailing_list:
+    if message.from_user.id not in getMailingList():
         logger.warning('Attempted unauthorized use of /yell by %s' % message.from_user.id)
         bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
         return
@@ -98,7 +98,7 @@ def yell(message):
     announcements.append(broadcast)
     failed = ''
     # send to all recipients
-    for recipient in mailing_list:
+    for recipient in getMailingList():
         try:
             logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
             bot.send_message(recipient, broadcast)
@@ -150,6 +150,16 @@ def getTime(message):
 
 def logMessage(message):
     logger.info('%s: %s' % (whoIs(message.from_user.id), message.text))
+
+"""
+    /who
+    - returns a list of people listening to this bot
+    - also list groups and their composition
+"""
+@bot.message_handler(commands = ['who'])
+def getWho(message):
+    logMessage(message)
+    bot.reply_to(message, enumerateListeners())
 
 logger.info('AndreaBot is listening ...')
 bot.polling()
