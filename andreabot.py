@@ -26,6 +26,13 @@ logging.captureWarnings(True)
 # TODO convert to persistent storage to enable bot reboot
 global announcements
 announcements = []
+global message_id
+message_id = 1
+
+# fingerprinter
+global announcementRead
+announcementRead = {
+}
 
 @bot.message_handler(commands = ['start'])
 def welcome(message):
@@ -86,27 +93,35 @@ def yell(message):
     # timestamp is pretty and human-readable, 12hr + date
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
 
-    # strip command word
-    #broadcast = '----- MESSAGE BEGIN -----\n' + re.sub('^\/yell\s+', '', message.text)
-    broadcast = re.sub('^/yell\s+', '', message.text)
+    # append message ID
+    broadcast = 'Message ID: %d\n\n' % message_id
 
-    # append byline
-    #broadcast += '\n----- MESSAGE END -----\n' + '\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
+    # strip command word and append message
+    broadcast += re.sub('^/yell\s+', '', message.text)
+
+    # append byline and pretty timestamp
     broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
     broadcast += '\n' + timestamp
 
     announcements.append(broadcast)
+    announcementRead[message_id] = {}
+
     failed = ''
     # send to all recipients
     for recipient in mailing_list:
         try:
+            # successful send to recipient
             logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
             bot.send_message(recipient, broadcast)
+            announcementRead[message_id][whoIs(recipient)] = False
         except Exception:
+            # failed to send to recipient
             logger.warn('Failed to yell at \'%s\'' % whoIs(recipient))
             failed += whoIs(recipient) + '\n'
 
-    # feedback to sender about failed recipients
+    message_id += 1
+
+    # feedback to sender about failed recipients, if any
     if failed != '':
         bot.reply_to(message, '\nWARNING: yell did not reach the following people\n\n%s' % failed)
 
@@ -150,6 +165,60 @@ def getTime(message):
 
 def logMessage(message):
     logger.info('%s: %s' % (whoIs(message.from_user.id), message.text))
+
+"""
+    /read <id>
+    - acknowledge received and read message with ID <id>
+"""
+@bot.message_handler(commands = ['read'])
+def read(message):
+    target_id = re.match('/read (\d+)', message.text).group(1)
+
+    # catch non-numeric ID
+    if target_id == None:
+        bot.reply_to(message, 'The message ID should be made of numbers only.')
+        return
+
+    # catch bad message ID
+    if target_id not in announcementRead:
+        bot.reply_to(message, 'Couldn\'t find a message with this ID.')
+        return
+    
+    announcementRead[target_id][whoIs(message.from_user.id)] = True
+    bot.reply_to(message, 'Thanks! You have acknowledged message ID %d' % target_id)
+    return
+
+"""
+    /status <id>
+    - returns acknowledgement status of message with ID <id>
+"""
+@bot.message_handler(commands = ['status'])
+def status(message):
+    target_id = re.match('/status (\d+)', message.text).group(1)
+
+    # catch non-numeric ID
+    if target_id == None:
+        bot.reply_to(message, 'The message ID should be made of numbers only.')
+        return
+
+    # catch bad message ID
+    if target_id not in announcementRead:
+        bot.reply_to(message, 'Couldn\'t find a message with this ID.')
+        return
+   
+    seen = 'Acknowledged by:\n'
+    notseen = 'Not seen by:\n'
+    for recipient in announcementRead[target_id]:
+        if announcementRead[target_id][recipient] == False:
+            notseen += recipient + '\n'
+        else:
+            seen += recipient + '\n'
+
+    bot.reply_to(message, seen + '\n' + notseen)
+"""
+    /vlog
+    - prints every announcement sent
+"""
 
 logger.info('AndreaBot is listening ...')
 bot.polling()
