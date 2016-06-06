@@ -4,13 +4,15 @@ Every FOP director's favorite assistant! A Telegram bot to assist announcement a
 
 ## Requirements
 `pyTelegramBotAPI`
+
 `python3`
 
 ## Deployment
 Ensure that your Telegram bot API token is inside `settings_secret.py`. Use `settings_secret_example.py` to insert the token.
 
+Start the bot by running
 ```python
-    python3 andreabot.py
+python3 andreabot.py
 ```
 
 ## Supported Functions
@@ -19,4 +21,4 @@ Ensure that your Telegram bot API token is inside `settings_secret.py`. Use `set
 | /yell `message` | Sends `message` to all users on the mailing list.                            |
 | /time           | Returns the bot server's current time and date.                              |
 | /log            | Returns at most the 5 most recent announcements made in chronological order. |
-|                 |                                                                              |
+| /name `name`    | Tells me that you are `name`.                                                |
