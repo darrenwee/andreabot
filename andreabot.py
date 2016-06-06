@@ -22,6 +22,7 @@ telebot.logger.setLevel(logging.INFO)
 logging.captureWarnings(True)
 
 # store messages
+# TODO convert to persistent storage to enable bot reboot
 global announcements
 announcements = []
 
@@ -31,7 +32,29 @@ def welcome(message):
 
 @bot.message_handler(commands = ['help'])
 def helper(message):
-    bot.reply_to(message, 'Commands available: /yell, /log, /time')
+    bot.reply_to(message, 'Commands available:\n\n/yell\n/log\n/time')
+
+"""
+    /name <name>
+    - this doesn't actually do anything except record chat IDs to a file
+    - for hardcoding of telegram chat ID into authorized module
+"""
+@bot.message_handler(commands = ['name'])
+def getName(message):
+    matches = re.match('/name (.+)', message.text)
+    logger.info('%s is ID %s' % (matches.group(1), message.from_user.id))
+
+    # don't bother logging if they're already in the address book
+    if message.from_user.id in rev_book:
+        bot.reply_to(message, 'I already know you! You\'re %s.' % (rev_book.get(message.from_user.id)))
+        return
+    
+    # write out to a text file so I can get it easily
+    with open("chat_ids.txt", 'a') as id_file:
+        id_file.write('\'%s\': %s,\n' % (matches.group(1), message.from_user.id))
+
+    # acknowledge user
+    bot.reply_to(message, 'Thanks %s! Your chat ID is %s.' % (matches.group(1), message.from_user.id))
 
 """
     /yell <message>
@@ -39,12 +62,13 @@ def helper(message):
 """
 @bot.message_handler(commands = ['yell'])
 def yell(message):
+    logMessage(message)
+
+    # deny people who aren't in the mailing list from yelling
     if message.from_user.id not in getIDs(mailing_list):
         logger.warning('Attempted unauthorized use of /yell by %s' % message.from_user.id)
         bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
         return
-
-    logMessage(message)
 
     # build the timestamp (modify format as necessary)
     # timestamp is pretty and human-readable, 12hr + date
