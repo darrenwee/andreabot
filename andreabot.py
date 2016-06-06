@@ -28,10 +28,12 @@ announcements = []
 
 @bot.message_handler(commands = ['start'])
 def welcome(message):
+    logMessage(message)
     bot.reply_to(message, 'Hi! I\'m AndreaBot. I help Andrea and other FOP comm members disseminate information to important people.')
 
 @bot.message_handler(commands = ['help'])
 def helper(message):
+    logMessage(message)
     bot.reply_to(message, 'Commands available:\n\n/yell\n/log\n/time')
 
 """
@@ -41,6 +43,7 @@ def helper(message):
 """
 @bot.message_handler(commands = ['name'])
 def getName(message):
+    logMessage(message)
     matches = re.match('/name (.+)', message.text)
     logger.info('%s is ID %s' % (matches.group(1), message.from_user.id))
 
@@ -65,7 +68,7 @@ def yell(message):
     logMessage(message)
 
     # deny people who aren't in the mailing list from yelling
-    if message.from_user.id not in getIDs(mailing_list):
+    if message.from_user.id not in mailing_list:
         logger.warning('Attempted unauthorized use of /yell by %s' % message.from_user.id)
         bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
         return
@@ -84,9 +87,19 @@ def yell(message):
     broadcast += '\n' + timestamp
 
     announcements.append(broadcast)
+    failed = ''
     # send to all recipients
-    for recipient in getIDs(mailing_list):
-        bot.send_message(recipient, broadcast)
+    for recipient in mailing_list:
+        try:
+            logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
+            bot.send_message(recipient, broadcast)
+        except Exception:
+            logger.warn('Failed to yell at \'%s\'' % whoIs(recipient))
+            failed += whoIs(recipient) + '\n'
+
+    # feedback to sender about failed recipients
+    if failed != '':
+        bot.reply_to(message, '\nWARNING: yell did not reach the following people\n\n%s' % failed)
 
 """
     /log
