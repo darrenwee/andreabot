@@ -159,27 +159,7 @@ def logMessage(message):
 @bot.message_handler(commands = ['who'])
 def getWho(message):
     logMessage(message)
-    
-    reply = 'The following people are listening to yells:\n'
-    i = 1
-
-    # get a list of yell listeners
-    for listening_id in getMailingList():
-        reply += '%d. %-14s' % (i, whoIs(listening_id))
-        i += 1
-        if (i+1) % 2 == 0:
-            reply += '\n'
-
-    # get group lists
-    reply += '\n-------- Group Lists --------\n'
-    for group in ['cogls', 'vogls', 'fopcomm']:
-        reply += 'Group \'%s\'\n' % group
-        # the groups dictionary is maintained in the authorized module
-        for group_member in groups.get(group):
-            reply += '%s, ' % group_member
-        reply += '\n\n'
-
-    bot.reply_to(message, reply)
+    bot.reply_to(message, enumerateListeners())
 
 logger.info('AndreaBot is listening ...')
 bot.polling()
