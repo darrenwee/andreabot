@@ -165,11 +165,13 @@ def getWho(message):
 
     # get a list of yell listeners
     for listening_id in getMailingList():
-        reply += '%d. %s\n' % (i, whoIs(listening_id))
+        reply += '%d. %-14s' % (i, whoIs(listening_id))
         i += 1
+        if (i+1) % 2 == 0:
+            reply += '\n'
 
     # get group lists
-    reply += '----- Group Lists -----\n'
+    reply += '\n-------- Group Lists --------\n'
     for group in ['cogls', 'vogls', 'fopcomm']:
         reply += 'Group \'%s\'\n' % group
         # the groups dictionary is maintained in the authorized module
