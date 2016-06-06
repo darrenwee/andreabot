@@ -9,6 +9,7 @@ from telebot import types
 
 # andreabot modules
 #from botlogger import *
+from helper import *
 from authorized import *
 from settings_secret import TOKEN
 
@@ -34,7 +35,15 @@ def welcome(message):
 @bot.message_handler(commands = ['help'])
 def helper(message):
     logMessage(message)
-    bot.reply_to(message, 'Commands available:\n\n/yell\n/log\n/time')
+
+    # naive helper
+    if message.text == '/help':
+        bot.reply_to(message, getNaiveHelp())
+        return
+
+    # command helper
+    command = re.match('/help\s+([a-z]+)', message.text).group(1)
+    bot.reply_to(message, getHelp(command))
 
 """
     /name <name>
