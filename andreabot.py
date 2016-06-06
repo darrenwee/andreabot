@@ -77,7 +77,7 @@ def yell(message):
     logMessage(message)
 
     # deny people who aren't in the mailing list from yelling
-    if message.from_user.id not in mailing_list:
+    if message.from_user.id not in getMailingList():
         logger.warning('Attempted unauthorized use of /yell by %s' % message.from_user.id)
         bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
         return
@@ -98,7 +98,7 @@ def yell(message):
     announcements.append(broadcast)
     failed = ''
     # send to all recipients
-    for recipient in mailing_list:
+    for recipient in getMailingList():
         try:
             logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
             bot.send_message(recipient, broadcast)
@@ -150,6 +150,34 @@ def getTime(message):
 
 def logMessage(message):
     logger.info('%s: %s' % (whoIs(message.from_user.id), message.text))
+
+"""
+    /who
+    - returns a list of people listening to this bot
+    - also list groups and their composition
+"""
+@bot.message_handler(commands = ['who'])
+def getWho(message):
+    logMessage(message)
+    
+    reply = 'The following people are listening to yells:\n'
+    i = 1
+
+    # get a list of yell listeners
+    for listening_id in getMailingList():
+        reply += '%d. %s\n' % (i, whoIs(listening_id))
+        i += 1
+
+    # get group lists
+    reply += '----- Group Lists -----\n'
+    for group in ['cogls', 'vogls', 'fopcomm']:
+        reply += 'Group \'%s\'\n' % group
+        # the groups dictionary is maintained in the authorized module
+        for group_member in groups.get(group):
+            reply += '%s, ' % group_member
+        reply += '\n\n'
+
+    bot.reply_to(message, reply)
 
 logger.info('AndreaBot is listening ...')
 bot.polling()
