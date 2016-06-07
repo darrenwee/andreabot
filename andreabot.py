@@ -82,6 +82,12 @@ def yell(message):
         bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
         return
 
+    # deny yell without message
+    if re.match('^\s*/yell\s*$', message.text) != None:
+        logger.warning('%s: /yell denied; no message' % whoIs(message.from_user.id))
+        bot.reply_to(message, 'There is no message. I will not yell for this! See /help yell')
+        return
+
     # build the timestamp (modify format as necessary)
     # timestamp is pretty and human-readable, 12hr + date
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
@@ -92,7 +98,11 @@ def yell(message):
 
     # append byline
     #broadcast += '\n----- MESSAGE END -----\n' + '\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
-    broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
+    if message.from_user.username != 'None':
+        broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
+    else:
+        broadcast += '\n\nSent by %s\n' % (whoIs(message.from_user.id))
+
     broadcast += '\n' + timestamp
 
     announcements.append(broadcast)
