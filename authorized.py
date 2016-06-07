@@ -9,9 +9,14 @@ import re
 address_book = {
     # FOP comm
     'Andrea'    : 113764188,    # FOP director
+    'Yuchuan'   : 108571854,    # FOP vice-director
     'Shane'     : 89686519,     # oweek director
+    'Jileen'    : 120611059,    # ocamp director
     'Deborah'   : 222836171,    # events director
+    'Haqeem'    : 176314759,    # logistics director
+    'Edwin'     : 70230611,     # finance director
     'Yantyng'   : 112279032,    # safety/FOP, black OGL
+    'Dexter'    : 58599435,     # safety IC for ocamp
 
     # USC MC
     'Tham'      : 111665525,    # USC MC member
@@ -30,6 +35,7 @@ address_book = {
     'Natalya'   : 16335747,     # purple COGL
     'Bryan'     : 117396861,    # green COGL
     'Hongwei'   : 98195170,     # orange COGL
+    'Jingshun'  : 102888885,    # red COGL
 }
 
 rev_book = {v: k for k, v in address_book.items()}
@@ -39,9 +45,9 @@ global groups
 groups = {
 	'admins'	: ['Darren'],
 	'vogls'	    : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
-	'cogls'	    : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei'],
-	'fopcomm'	: ['Andrea', 'Shane', 'Deborah', 'Yantyng', 'Tham'],
-	'safety'	: ['Darren', 'Yantyng'],
+	'cogls'	    : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
+	'fopcomm'	: ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter'],
+	'safety'	: ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
 }
 
 """
@@ -60,19 +66,29 @@ def getGroups(groupList):
             IDs += getIDs(groups.get(group))
     return IDs
 
-def getIDs(group):
+"""
+    get the IDs of a list of people's names
+"""
+def getIDs(people):
     IDs = []
-    for person in group:
+    for person in people:
         if person in address_book:
             IDs.append(address_book.get(person))
     return IDs
 
+"""
+    map a chat ID to a name if possible
+"""
 def whoIs(target_id):
     if target_id in rev_book:
         return rev_book.get(target_id)
     else:
         return target_id
 
+"""
+    enumerates all names inside address_book
+    for /who command
+"""
 def enumerateListeners():
     reply = 'The following people are listening to yells:\n'
     i = 1
@@ -86,7 +102,7 @@ def enumerateListeners():
 
     # get group lists
     reply += '\n-------- Group Lists --------\n'
-    for group in ['cogls', 'vogls', 'fopcomm']:
+    for group in ['cogls', 'vogls', 'fopcomm', 'safety']:
         reply += 'Group \'%s\'\n' % group
 
         # the groups dictionary is maintained in the authorized module
