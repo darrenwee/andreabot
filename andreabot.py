@@ -93,11 +93,9 @@ def yell(message):
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
 
     # strip command word
-    #broadcast = '----- MESSAGE BEGIN -----\n' + re.sub('^\/yell\s+', '', message.text)
     broadcast = re.sub('^/yell\s+', '', message.text)
 
     # append byline
-    #broadcast += '\n----- MESSAGE END -----\n' + '\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
     if message.from_user.username != 'None':
         broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
     else:
@@ -107,6 +105,10 @@ def yell(message):
 
     announcements.append(broadcast)
     failed = ''
+
+    # feedback to sender
+    bot.reply_to(message, 'Thanks! Propagating message now.')
+
     # send to all recipients
     for recipient in getMailingList():
         try:
