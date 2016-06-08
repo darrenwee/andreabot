@@ -172,4 +172,4 @@ def getWho(message):
     bot.reply_to(message, enumerateListeners())
 
 logger.info('AndreaBot is listening ...')
-bot.polling()
+bot.polling(none_stop = True)
