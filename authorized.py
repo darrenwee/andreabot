@@ -7,35 +7,40 @@ import re
 
 # dictionary for Telegram chat IDs
 address_book = {
-    # FOP comm
-    'Andrea'    : 113764188,    # FOP director
-    'Yuchuan'   : 108571854,    # FOP vice-director
-    'Shane'     : 89686519,     # oweek director
-    'Jileen'    : 120611059,    # ocamp director
-    'Deborah'   : 222836171,    # events director
-    'Haqeem'    : 176314759,    # logistics director
-    'Edwin'     : 70230611,     # finance director
-    'Yantyng'   : 112279032,    # safety/FOP, black OGL
-    'Dexter'    : 58599435,     # safety IC for ocamp
 
-    # USC MC
-    'Tham'      : 111665525,    # USC MC member
 
-    # VOGLs
-    'Darren'    : 53558212,     # black VOGL, admin
-    'Chester'   : 110971462,    # blue VOGL
-    'Samantha'  : 106888349,    # red VOGL
-    'Khaiqing'  : 118410662,    # purple VOGL
-    'Claire'    : 27374797,     # green VOGL
-    'Jiahao'    : 68976391,     # orange VOGL
+    # # FOP comm
+    # 'Andrea'    : 113764188,    # FOP director
+    # 'Yuchuan'   : 108571854,    # FOP vice-director
+    # 'Shane'     : 89686519,     # oweek director
+    # 'Jileen'    : 120611059,    # ocamp director
+    # 'Deborah'   : 222836171,    # events director
+    # 'Haqeem'    : 176314759,    # logistics director
+    # 'Edwin'     : 70230611,     # finance director
+    # 'Yantyng'   : 112279032,    # safety/FOP, black OGL
+    # 'Dexter'    : 58599435,     # safety IC for ocamp
 
-    # COGLs
-    'Xinying'   : 104784604,    # black COGL
-    'Changming' : 52917741,     # blue COGL
-    'Natalya'   : 16335747,     # purple COGL
-    'Bryan'     : 117396861,    # green COGL
-    'Hongwei'   : 98195170,     # orange COGL
-    'Jingshun'  : 102888885,    # red COGL
+    # # USC MC
+    # 'Tham'      : 111665525,    # USC MC member
+
+    # # VOGLs
+    # 'Darren'    : 53558212,     # black VOGL, admin
+    # 'Chester'   : 110971462,    # blue VOGL
+    # 'Samantha'  : 106888349,    # red VOGL
+    # 'Khaiqing'  : 118410662,    # purple VOGL
+    # 'Claire'    : 27374797,     # green VOGL
+    # 'Jiahao'    : 68976391,     # orange VOGL
+
+    # # COGLs
+    # 'Xinying'   : 104784604,    # black COGL
+    # 'Changming' : 52917741,     # blue COGL
+    # 'Natalya'   : 16335747,     # purple COGL
+    # 'Bryan'     : 117396861,    # green COGL
+    # 'Hongwei'   : 98195170,     # orange COGL
+    # 'Jingshun'  : 102888885,    # red COGL
+
+    # me
+    'Shao Yang' : 71671678,      # noob developer
 }
 
 rev_book = {v: k for k, v in address_book.items()}
@@ -43,7 +48,7 @@ rev_book = {v: k for k, v in address_book.items()}
 # user groups
 global groups
 groups = {
-	'admins'	: ['Darren'],
+	'admins'	: ['Darren', 'Shao Yang'],
 	'vogls'	    : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
 	'cogls'	    : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
 	'fopcomm'	: ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter'],
@@ -54,27 +59,21 @@ groups = {
     returns a list of chat IDs of all listening to yells
 """
 def getMailingList():
-    return list(set(getGroups(['vogls', 'cogls', 'fopcomm'])))
+    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins'])))
 
 """
     returns a list of chat IDs from a list of groups
 """
 def getGroups(groupList):
-    IDs = []
-    for group in groupList:
-        if group in groups:
-            IDs += getIDs(groups.get(group))
-    return IDs
+    lists = [getIDs(groups.get(group)) for group in groupList if group in groups]
+    return [item for sublist in lists for item in sublist]
+
 
 """
     get the IDs of a list of people's names
 """
 def getIDs(people):
-    IDs = []
-    for person in people:
-        if person in address_book:
-            IDs.append(address_book.get(person))
-    return IDs
+    return [address_book.get(person) for person in people if person in address_book]
 
 """
     map a chat ID to a name if possible
