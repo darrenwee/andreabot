@@ -10,6 +10,7 @@ address_book = {
     # FOP comm
     'Andrea'    : 113764188,    # FOP director
     'Yuchuan'   : 108571854,    # FOP vice-director
+    'Cheryl'    : 216847462,    # rag director
     'Shane'     : 89686519,     # oweek director
     'Jileen'    : 120611059,    # ocamp director
     'Deborah'   : 222836171,    # events director
@@ -46,7 +47,7 @@ groups = {
 	'admins'	: ['Darren'],
 	'vogls'	    : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
 	'cogls'	    : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
-	'fopcomm'	: ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter'],
+	'fopcomm'	: ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl'],
 	'safety'	: ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
 }
 
