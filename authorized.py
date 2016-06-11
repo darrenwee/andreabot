@@ -45,11 +45,11 @@ rev_book = {v: k for k, v in address_book.items()}
 # user groups
 global groups
 groups = {
-	'admins'	: ['Darren', 'Shao Yang'],
-	'vogls'	    : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
-	'cogls'	    : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
-	'fopcomm'	: ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl'],
-	'safety'	: ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
+    'admins'    : ['Darren', 'Shao Yang'],
+    'vogls'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
+    'cogls'     : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
+    'fopcomm'   : ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl'],
+    'safety'    : ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
 }
 
 """
