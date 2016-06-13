@@ -1,177 +1,193 @@
 #!/usr/bin/python
 
+import sys
 import time
 import datetime
 import re
-import telebot
-import logging
-from telebot import types
+import telepot
+
+from telepot.delegate import per_chat_id, create_open
 
 # andreabot modules
-#from botlogger import *
-from helper import *
-from authorized import *
 from settings_secret import TOKEN
+from botlogger import logger
+import authorized
+import helper
 
-# spawn AndreaBot
-bot = telebot.TeleBot(TOKEN)
-#bot = telebot.AsyncTeleBot(TOKEN)
+# establish connection to mongodb server
+import pymongo
+try:
+    connection = pymongo.MongoClient('monty', 27017)
+    logger.info('Successfully connected to MongoDB daemon')
+except pymongo.errors.ConnectionFailure as e:
+    logger.error('Failed to connect to MongoDB: %s' % e)
+    logger.error('AndreaBot exiting!')
+    sys.exit(1)
 
-# for console/file logging
-logger = telebot.logger
-telebot.logger.setLevel(logging.INFO)
-logging.captureWarnings(True)
+db = connection['andreabot']
+announcements = db['announcements']
 
-# store messages
-# TODO convert to persistent storage to enable bot reboot
-global announcements
-announcements = []
-
-@bot.message_handler(commands = ['start'])
-def welcome(message):
-    logMessage(message)
-    bot.reply_to(message, 'Hi! I\'m AndreaBot. I help Andrea and other FOP comm members disseminate information to important people.')
-
-@bot.message_handler(commands = ['help'])
-def helper(message):
-    logMessage(message)
-
-    # naive helper
-    if message.text == '/help':
-        bot.reply_to(message, getNaiveHelp())
-        return
-
-    # command helper
-    command = re.match('/help\s+([a-z]+)', message.text).group(1)
-    bot.reply_to(message, getHelp(command))
-
-"""
-    /name <name>
-    - this doesn't actually do anything except record chat IDs to a file
-    - for hardcoding of telegram chat ID into authorized module
-"""
-@bot.message_handler(commands = ['name'])
-def getName(message):
-    logMessage(message)
-    matches = re.match('/name (.+)', message.text)
-    logger.info('%s is ID %s' % (matches.group(1), message.from_user.id))
-
-    # don't bother logging if they're already in the address book
-    if message.from_user.id in rev_book:
-        bot.reply_to(message, 'I already know you! You\'re %s.' % (rev_book.get(message.from_user.id)))
-        return
+def getTime():
+    return datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S, %d %B %Y ')
     
-    # write out to a text file so I can get it easily
-    with open("chat_ids.txt", 'a') as id_file:
-        id_file.write('\'%s\': %s,\n' % (matches.group(1), message.from_user.id))
+def getLog(to_return):
+    messages = announcements.find().sort( [ ('_id', -1) ] ).limit(to_return)
+    delimiter = '======================\n'
 
-    # acknowledge user
-    bot.reply_to(message, 'Thanks %s! Your chat ID is %s.' % (matches.group(1), message.from_user.id))
-
-"""
-    /yell <message>
-    - sends <message> to all users on the mailing list (controlled by authorized.py)
-"""
-@bot.message_handler(commands = ['yell'])
-def yell(message):
-    logMessage(message)
-
-    # deny people who aren't in the mailing list from yelling
-    if message.from_user.id not in getMailingList():
-        logger.warning('Attempted unauthorized use of /yell by %s' % message.from_user.id)
-        bot.reply_to(message, 'Sorry! You aren\'t allowed to use /yell. Tell Darren (@ohdearren) if this is a mistake.')
-        return
-
-    # deny yell without message
-    if re.match('^\s*/yell\s*$', message.text) != None:
-        logger.warning('%s: /yell denied; no message' % whoIs(message.from_user.id))
-        bot.reply_to(message, 'There is no message. I will not yell for this! See /help yell')
-        return
-
-    # build the timestamp (modify format as necessary)
-    # timestamp is pretty and human-readable, 12hr + date
-    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
-
-    # strip command word
-    broadcast = re.sub('^/yell\s+', '', message.text)
-
-    # append byline
-    if message.from_user.username != 'None':
-        broadcast += '\n\nSent by %s\n@%s' % (whoIs(message.from_user.id), message.from_user.username)
-    else:
-        broadcast += '\n\nSent by %s\n' % (whoIs(message.from_user.id))
-
-    broadcast += '\n' + timestamp
-
-    announcements.append(broadcast)
-    failed = ''
-
-    # feedback to sender
-    bot.reply_to(message, 'Thanks! Propagating message now.')
-
-    # send to all recipients
-    for recipient in getMailingList():
-        try:
-            logger.info('Yelling at \'%s\': \'%s\'' % (whoIs(recipient), re.sub('^/yell\s+', '', message.text)))
-            bot.send_message(recipient, broadcast)
-        except Exception:
-            logger.warn('Failed to yell at \'%s\'' % whoIs(recipient))
-            failed += whoIs(recipient) + '\n'
-
-    # feedback to sender about failed recipients
-    if failed != '':
-        bot.reply_to(message, '\nWARNING: yell did not reach the following people\n\n%s' % failed)
-
-"""
-    /log
-    - returns the most recent 5 announcements in chronological order (most recent last)
-"""
-@bot.message_handler(commands = ['log'])
-def getLog(message):
-    logMessage(message)
-    
-    # get last 0-5 elements of the announcement list
-    targets = announcements[-5:]
-
-    # craft the return message
-    delimiter = '\n=======================\n'
     reply = delimiter
 
-    for announcement in targets:
-        reply += announcement + delimiter
-
-    if reply == delimiter:
-        # no records could be found so message begins is purely the delimiter string
-        bot.reply_to(message, 'No messages found.')
+    if messages.count() == 0:
+        reply += 'No records found.\n' + delimiter
     else:
-        # some records found
-        bot.reply_to(message, reply)
+        for message in messages:
+            reply = delimiter + message['message'] + message['timestamp'] + '\n' + reply
+        reply += '%d most recent announcements ^' % to_return
+        
+    return reply
 
-"""
-    /time
-    - returns the bot's time (so that everyone has an agreeable clock)
-    - 24hr format w/ date
-"""    
-@bot.message_handler(commands = ['time'])
-def getTime(message):
-    logMessage(message)
+def yell(bot, message, requester_id):
+    # deny unauthorized yeller
+    if requester_id not in authorized.getMailingList():
+        logger.warn('Attempted unauthorized use of /yell by %s' % requester_id)
+        bot.sendMessage(requester_id, 'Sorry! You can\'t use this function. Contact Darren @ohdearren if this is a mistake.')
+        return
 
-    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S, %d %B %Y ')
-    logger.info('Gave timestamp \'%s\' to %s' % (timestamp, whoIs(message.from_user.id)))
-    bot.reply_to(message, timestamp)
+    # deny empty yell
+    if re.match('^\s*/yell\s*$', message) != None:
+        logger.warn('%s: /yell denied; no message' % authorized.whoIs(requester_id))
+        bot.sendMessage(requester_id, 'I need a message to yell! Yell not carried out.')
+        return
 
-def logMessage(message):
-    logger.info('%s: %s' % (whoIs(message.from_user.id), message.text))
+    # strip the command word
+    broadcast = re.sub('^/yell\s+', '', message)
 
-"""
-    /who
-    - returns a list of people listening to this bot
-    - also list groups and their composition
-"""
-@bot.message_handler(commands = ['who'])
-def getWho(message):
-    logMessage(message)
-    bot.reply_to(message, enumerateListeners())
+    # append byline
+    broadcast += '\n\nSent by %s via yell\n' % (authorized.whoIs(requester_id))
+
+    # add the announcement to the database
+    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
+    announcement_log = {
+        'message': broadcast,
+        'to': 'all',
+        'by': authorized.whoIs(requester_id),
+        'timestamp': timestamp,
+    }
+    announcements.insert_one(announcement_log)
+    logger.info('Added yell by %s to database.' % authorized.whoIs(requester_id))
+
+    # talk to the requester
+    bot.sendMessage(requester_id, 'Message is propagating now all listeners.')
+    for recipient in authorized.getMailingList():
+        bot.sendMessage(recipient, broadcast)
+        logger.info('%s: Yell propagated to %s (\'%s ...\')' % (authorized.whoIs(requester_id), authorized.whoIs(recipient), broadcast[:60]))
+
+    return
+
+def whisper(bot, message, needAcknowledgement, requester_id):
+    # deny empty whisper
+    if re.match('^\s*/whisper\s*$', message) != None:
+        logger.warn('%s: /whisper denied; no message or groups!' % authorized.whoIs(requester_id))
+        bot.sendMessage(requester_id, 'I need a message and group list to whisper! Whisper not carried out.')
+        return
+
+    matches = re.match('\s*/whisper\s+([a-zA-Z+]+)\s+(.+)', message)
+    groups = matches.group(1) 
+    broadcast = matches.group(2)
+
+    group_list = groupArg2List(groups)
+
+    timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
+
+    if authorized.groupIsValid(group_list):
+        broadcast = re.sub('\s*/whisper\s*', '', message)
+        broadcast += '\n\nSent by %s via whisper to:\n' % (authorized.whoIs(requester_id))
+        broadcast += ', '.join(group_list) + '\n'
+
+        bot.sendMessage(requester_id, 'Message is propagating now to: %s' % ', '.join(group_list))
+        # log in database
+        announcement_log = {
+            'message': broadcast,
+            'to': '+'.join(group_list),
+            'by': authorized.whoIs(requester_id),
+            'timestamp': timestamp,
+        }
+        announcements.insert_one(announcement_log)
+        logger.info('Added whisper by %s to database.' % authorized.whoIs(requester_id))
+
+        # propagate message
+        for recipient in authorized.getGroups(group_list):
+            bot.sendMessage(recipient, broadcast)
+    else:
+        # bad group parameters
+        bot.sendMessage(requester_id, 'One of your groups is not valid. Check /who for the group names.')
+        logger.warn('%s: /whisper denied; invalid group' % authorized.whoIs(requester_id))
+    return
+
+def groupArg2List(groupList):
+    if '+' not in groupList:
+        return [groupList]
+    else:
+        return re.split(r'\s*+\s*', groupList)
+
+#class AndreaBot(telepot.helper.ChatHandler):
+class AndreaBot(telepot.Bot):
+    def __init__(self, *args, **kwargs):
+        super(AndreaBot, self).__init__(*args, **kwargs)
+        self._answerer = telepot.helper.Answerer(self)
+        self._message_with_inline_keyboard = None
+
+#    def __init__(self, seed_tuple, timeout):
+#        super(AndreaBot, self).__init__(seed_tuple, timeout)
+#        self._count = 0
+
+    def on_chat_message(self, message):
+        content_type, chat_type, chat_id = telepot.glance(message)
+
+        command = message['text']
+        logger.info('Received \'%s\' from %s' % (command, authorized.whoIs(chat_id)))
+
+        # for '/start'
+        if command == '/start':
+            self.sendMessage(chat_id, 'Hi! I\'m AndreaBot. I help Andrea and other FOP comm members disseminate information.')
+        # /help [<command>]
+        elif command == '/help':
+            self.sendMessage(chat_id, helper.getNaiveHelp())
+        elif command.startswith('/help'):
+            keyword = re.match('\s*/help\s+([a-z]+)\s*', command).group(1)
+            self.sendMessage(chat_id, helper.getHelp(keyword))
+        # /who
+        elif command == '/who':
+            self.sendMessage(chat_id, authorized.enumerateListeners())
+        # /yell
+        elif command.startswith('/yell'):
+            yell(self, command, chat_id)
+        # /whisper
+        elif command.startswith('/whisper'):
+            whisper(self, command, False, chat_id)
+        # /log
+        elif command == '/log':
+            self.sendMessage(chat_id, getLog(5))
+        # /vlog <size>
+        elif command.startswith('/vlog'):
+            return_size = re.match('\s*/vlog\s+(\d+)', command).group(1)
+            self.sendMessage(chat_id, getLog(int(return_size)))
+        # /time
+        elif command == '/time':
+            self.sendMessage(chat_id, getTime())
+        # when nothing works
+        else:
+            self.sendMessage(chat_id, 'Invalid command. Try /help')
+
+        return
 
 logger.info('AndreaBot is listening ...')
-bot.polling(none_stop = True)
+
+bot = AndreaBot(TOKEN)
+bot.message_loop()
+
+#bot = telepot.DelegatorBot(TOKEN, [
+#    (per_chat_id(), create_open(AndreaBot, timeout=120)),
+#])
+
+while 1:
+    time.sleep(10)
