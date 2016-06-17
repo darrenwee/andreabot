@@ -99,7 +99,7 @@ def whisper(bot, message, needAcknowledgement, requester_id):
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
 
     if authorized.groupIsValid(group_list):
-        broadcast = re.sub('\s*/whisper\s*', '', message)
+        broadcast = re.sub('\s*/whisper\s*[a-zA-Z+]+', '', message)
         broadcast += '\n\nSent by %s via whisper to:\n' % (authorized.whoIs(requester_id))
         broadcast += ', '.join(group_list) + '\n'
 
@@ -117,6 +117,7 @@ def whisper(bot, message, needAcknowledgement, requester_id):
         # propagate message
         for recipient in authorized.getGroups(group_list):
             bot.sendMessage(recipient, broadcast)
+            logger.info('%s: Whisper propagated to %s (\'%s ...\')' % (authorized.whoIs(requester_id), authorized.whoIs(recipient), broadcast[:60]))
     else:
         # bad group parameters
         bot.sendMessage(requester_id, 'One of your groups is not valid. Check /who for the group names.')
@@ -127,7 +128,7 @@ def groupArg2List(groupList):
     if '+' not in groupList:
         return [groupList]
     else:
-        return re.split(r'\s*+\s*', groupList)
+        return re.split('\s*+\s*', groupList)
 
 #class AndreaBot(telepot.helper.ChatHandler):
 class AndreaBot(telepot.Bot):
