@@ -45,18 +45,25 @@ rev_book = {v: k for k, v in address_book.items()}
 # user groups
 global groups
 groups = {
-    'admins'    : ['Darren', 'Shao Yang'],
+<<<<<<< HEAD
+    'admins'    : ['Darren'],
+    'houses'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha', 'Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
     'vogls'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
     'cogls'     : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
     'fopcomm'   : ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl'],
     'safety'    : ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
+    'test'      : ['Darren'],
 }
 
 """
     returns a list of chat IDs of all listening to yells
 """
 def getMailingList():
-    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins'])))
+    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins', 'safety'])))
+<<<<<<< HEAD
+    #return getIDs(['Darren'])
+=======
+>>>>>>> master
 
 """
     returns a list of chat IDs from a list of groups
@@ -98,7 +105,7 @@ def enumerateListeners():
 
     # get group lists
     reply += '\n-------- Group Lists --------\n'
-    for group in ['cogls', 'vogls', 'fopcomm', 'safety']:
+    for group in ['houses', 'fopcomm', 'safety', 'cogls', 'vogls', 'admins']:
         reply += 'Group \'%s\'\n' % group
 
         # the groups dictionary is maintained in the authorized module
@@ -110,3 +117,9 @@ def enumerateListeners():
         reply += '\n\n'
 
     return reply
+
+def groupIsValid(group_list):
+    for group in group_list:
+        if group not in groups:
+            return False
+    return True
