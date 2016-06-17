@@ -3,15 +3,19 @@
 Every FOP director's favorite assistant! A Telegram bot to assist announcement and news dissemination to all important people like COGLs and VOGLs.
 
 ## Requirements
-`pyTelegramBotAPI`
+`telepot`
 
 `python3`
 
-## Deployment
-Ensure that your Telegram bot API token is inside `settings_secret.py`. Use `settings_secret_example.py` to insert the token.
+`pymongo` and MongoDB
 
-Start the bot by running
-```python
+## Deployment
+1. Ensure that your Telegram bot API token is inside `settings_secret.py`. Use `settings_secret_example.py` to insert the token.
+
+2. Ensure that the `mongod` daemon is listening. The DB connection settings are stored in `manager.py`.
+
+3. Start the bot by running
+```
 python3 andreabot.py
 ```
 
@@ -23,5 +27,6 @@ python3 andreabot.py
 | /yell `message` | Sends `message` to all users on the mailing list.                            |
 | /time           | Returns the bot server's current time and date.                              |
 | /log            | Returns at most the 5 most recent announcements made in chronological order. |
+| /vlog `n`       | Returns the `n` most recent announcements made in chronological order.       |
 | /name `name`    | Tells me that you are `name`.                                                |
 | /who            | Returns a list of people who are currently listening to /yell and list of groups |
