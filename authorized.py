@@ -45,6 +45,7 @@ rev_book = {v: k for k, v in address_book.items()}
 # user groups
 global groups
 groups = {
+<<<<<<< HEAD
     'admins'    : ['Darren'],
     'houses'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha', 'Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
     'vogls'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
@@ -58,8 +59,11 @@ groups = {
     returns a list of chat IDs of all listening to yells
 """
 def getMailingList():
-    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins'])))
+    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins', 'safety'])))
+<<<<<<< HEAD
     #return getIDs(['Darren'])
+=======
+>>>>>>> master
 
 """
     returns a list of chat IDs from a list of groups
