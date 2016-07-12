@@ -1,6 +1,11 @@
 # AndreaBot Manual
 
 ## Important Commands
+### Help
+Usage: `/help` or `/help command`
+
+Tells you how to use commands. Commands must always be preceded by a slash `/`.
+
 ### Who
 Usage: `/who`
 
@@ -27,10 +32,12 @@ You cannot use `/whisper` from group chats.
 #### Examples
 
 To send a message to all OGL chats:
-1. `/whisper ogls Hi OGLs, please ensure that your freshies do not run around.`
+
+`/whisper ogls Hi OGLs, please ensure that your freshies do not run around.`
 
 To send a message to all COGLs and VOGLs:
-2. `/whisper cvogls Hi CVOGLs, please submit this and that to the OWeek comm!`
+
+`/whisper cvogls Hi CVOGLs, please submit this and that to the OWeek comm!`
 
 The same applies to `/whisper cogls` and `/whisper vogls`.
 
