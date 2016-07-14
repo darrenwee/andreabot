@@ -2,3 +2,4 @@
 *.pyc
 chat_ids.txt
 settings_secret.py
+andreabot.log
