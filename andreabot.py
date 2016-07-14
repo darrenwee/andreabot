@@ -47,8 +47,8 @@ def getLog(to_return):
 
 def yell(bot, message, requester_id):
     # deny unauthorized yeller
-    if requester_id not in authorized.getMailingList():
-        logger.warn('Attempted unauthorized use of /yell by %s' % requester_id)
+    if requester_id not in authorized.getMailingList() or requester_id < 0:
+        logger.warn('Attempted unauthorized use of /yell by %s' % authorized.whoIs(requester_id))
         bot.sendMessage(requester_id, 'Sorry! You can\'t use this function. Contact Darren @ohdearren if this is a mistake.')
         return
 
@@ -84,6 +84,12 @@ def yell(bot, message, requester_id):
     return
 
 def whisper(bot, message, needAcknowledgement, requester_id):
+    # deny unauthorized yeller
+    if requester_id not in authorized.getMailingList() or requester_id < 0:
+        logger.warn('Attempted unauthorized use of /whisper by %s' % authorized.whoIs(requester_id))
+        bot.sendMessage(requester_id, 'Sorry! You can\'t use this function. Contact Darren @ohdearren if this is a mistake.')
+        return
+
     # deny empty whisper
     if re.match('^\s*/whisper\s*$', message) != None:
         logger.warn('%s: /whisper denied; no message or groups!' % authorized.whoIs(requester_id))
@@ -91,7 +97,7 @@ def whisper(bot, message, needAcknowledgement, requester_id):
         return
 
     matches = re.match('\s*/whisper\s+([a-zA-Z+]+)\s+(.+)', message)
-    groups = matches.group(1) 
+    groups = matches.group(1).lower()
     broadcast = matches.group(2)
 
     group_list = groupArg2List(groups)
@@ -99,7 +105,7 @@ def whisper(bot, message, needAcknowledgement, requester_id):
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%I:%M%p, %d %B %Y')
 
     if authorized.groupIsValid(group_list):
-        broadcast = re.sub('\s*/whisper\s*[a-zA-Z+]+', '', message)
+        broadcast = re.sub('^\s*/whisper\s*[a-zA-Z+]+', '', message)
         broadcast += '\n\nSent by %s via whisper to:\n' % (authorized.whoIs(requester_id))
         broadcast += ', '.join(group_list) + '\n'
 
@@ -118,6 +124,11 @@ def whisper(bot, message, needAcknowledgement, requester_id):
         for recipient in authorized.getGroups(group_list):
             bot.sendMessage(recipient, broadcast)
             logger.info('%s: Whisper propagated to %s (\'%s ...\')' % (authorized.whoIs(requester_id), authorized.whoIs(recipient), broadcast[:60]))
+        
+        # echo to sender
+        bot.sendMessage(requester_id, 'MESSAGE ECHO\n\n' + broadcast)
+        # inform darren
+        bot.sendMessage(authorized.address_book.get('Darren'), 'Whisper sent by %s to group \'%s\'' % (authorized.whoIs(requester_id), groups))
     else:
         # bad group parameters
         bot.sendMessage(requester_id, 'One of your groups is not valid. Check /who for the group names.')
@@ -149,7 +160,7 @@ class AndreaBot(telepot.Bot):
 
         # for '/start'
         if command == '/start':
-            self.sendMessage(chat_id, 'Hi! I\'m AndreaBot. I help Andrea and other FOP comm members disseminate information.')
+            self.sendMessage(chat_id, 'Hi! I\'m AndreaBot. I help Andrea and other FOP comm members disseminate information. Your name is \'%s\'.' % authorized.whoIs(chat_id))
         # /help [<command>]
         elif command == '/help':
             self.sendMessage(chat_id, helper.getNaiveHelp())
@@ -175,6 +186,11 @@ class AndreaBot(telepot.Bot):
         # /time
         elif command == '/time':
             self.sendMessage(chat_id, getTime())
+        elif command.startswith('/name'):
+            name = re.match('\s*/name\s+(.+)', command).group(1)
+            logger.info('/name: %s is \'%s\'' % (chat_id, name))
+            self.sendMessage(authorized.address_book.get('Darren'), '%s is %s' % (chat_id, name))
+            self.sendMessage(chat_id, 'Thanks! You will be added shortly.')
         # when nothing works
         else:
             self.sendMessage(chat_id, 'Invalid command. Try /help')
