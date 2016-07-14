@@ -13,7 +13,7 @@ import logging
 import time
 
 logging.basicConfig(
-	filename = 'voglbot.log',
+	filename = 'andreabot.log',
 	filemode = 'w',
 	level=logging.DEBUG,
 	format='%(asctime)s: %(message)s',
