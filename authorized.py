@@ -13,6 +13,7 @@ address_book = {
     'Cheryl'    : 216847462,    # rag director
     'Shane'     : 89686519,     # oweek director
     'Jileen'    : 120611059,    # ocamp director
+    'Nicole'    : 89733245,     # ocamp vice-director
     'Deborah'   : 222836171,    # events director
     'Haqeem'    : 176314759,    # logistics director
     'Edwin'     : 70230611,     # finance director
@@ -20,8 +21,30 @@ address_book = {
     'Dexter'    : 58599435,     # safety IC for ocamp
     'Shao Yang' : 71671678,      # noob developer
 
+    # oweek comm
+    'Justin'    : 87244565,     # oweek games
+    'Vernice'   : 105646117,
+    'Ye-Min'    : 201501542,
+    'Sujin'     : 117580308,
+    'Chelsea'   : 61938731,
+    'Julia'     : 182492804,
+    'Leon'      : 123417223,
+    'Jerene'    : 114040226,
+    'Jessica'   : 37414220,
+    'Tingting'  : 106120119,
+    'Xuekai'    : 92915441,
+
     # USC MC
     'Tham'      : 111665525,    # USC MC member
+
+    # OGL groups
+    'Nox_OGLs'  : -1001061181759, # Nox OGLs
+    'Sigvarr_OGLs': -1001051469518, # Sigvarr OGLs
+    'Hydra_OGLs': -127119377,   # Hydra OGLs
+    'Verde_OGLs': -137548515,   # Verde OGLs
+    'Aether_OGLs': -1001063822819,  # Aether OGLs
+    'Angstrom_OGLs': -146382133,    # Angstrom OGLs
+#    'Safety_Team'   : -1001064167878, # Safety ICs
 
     # VOGLs
     'Darren'    : 53558212,     # black VOGL, admin
@@ -45,13 +68,15 @@ rev_book = {v: k for k, v in address_book.items()}
 # user groups
 global groups
 groups = {
-<<<<<<< HEAD
     'admins'    : ['Darren'],
-    'houses'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha', 'Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
+    'cvogls'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha', 'Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
     'vogls'     : ['Darren', 'Jiahao', 'Claire', 'Khaiqing', 'Chester', 'Samantha'],
     'cogls'     : ['Xinying', 'Changming', 'Natalya', 'Bryan', 'Hongwei', 'Jingshun'],
-    'fopcomm'   : ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl'],
+    'fopcomm'   : ['Andrea', 'Yuchuan', 'Shane', 'Jileen', 'Deborah', 'Haqeem', 'Edwin', 'Yantyng', 'Tham', 'Dexter', 'Cheryl', 'Nicole'],
+    #'safety'    : ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan', 'Safety_Team'],
     'safety'    : ['Darren', 'Yantyng', 'Dexter', 'Khaiqing', 'Jiahao', 'Andrea', 'Yuchuan'],
+    'ogls'      : ['Nox_OGLs', 'Sigvarr_OGLs', 'Hydra_OGLs', 'Verde_OGLs', 'Aether_OGLs', 'Angstrom_OGLs'],
+    'oweek'     : ['Justin', 'Vernice', 'Shane', 'Ye-Min', 'Sujin', 'Chelsea', 'Julia', 'Leon', 'Jerene', 'Jessica', 'Tingting', 'Xuekai'],
     'test'      : ['Darren'],
 }
 
@@ -59,11 +84,7 @@ groups = {
     returns a list of chat IDs of all listening to yells
 """
 def getMailingList():
-    return list(set(getGroups(['vogls', 'cogls', 'fopcomm', 'admins', 'safety'])))
-<<<<<<< HEAD
-    #return getIDs(['Darren'])
-=======
->>>>>>> master
+    return list(set(getGroups(['cvogls', 'fopcomm', 'admins', 'safety', 'ogls', 'oweek'])))
 
 """
     returns a list of chat IDs from a list of groups
@@ -98,14 +119,14 @@ def enumerateListeners():
 
     # get a list of yell listeners
     for listening_id in getMailingList():
-        reply += '%d. %-14s' % (i, whoIs(listening_id))
+        reply += '%d. %-16s' % (i, whoIs(listening_id))
         i += 1
         if (i+1) % 2 == 0:
             reply += '\n'
 
     # get group lists
     reply += '\n-------- Group Lists --------\n'
-    for group in ['houses', 'fopcomm', 'safety', 'cogls', 'vogls', 'admins']:
+    for group in ['cvogls', 'ogls', 'oweek', 'fopcomm', 'safety', 'cogls', 'vogls', 'admins']:
         reply += 'Group \'%s\'\n' % group
 
         # the groups dictionary is maintained in the authorized module
