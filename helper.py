@@ -9,7 +9,7 @@
 # command description list (do not terminate with newlines)
 description = {
     'yell': 'Usage: /yell message\n--> Sends a message to everyone on the mailing list (use /who to see who\'s listening to this bot)',
-    'whisper': 'Usage: /whisper groups message\n--> Sends a message to everyone in the specified groups (use /who to see who\'s listening to this bot). Groups must be joint by a \'+\'',
+    'whisper': 'Usage: /whisper group message\n--> Sends a message to everyone in the specified group (use /who to see who\'s listening to this bot). You can only send to 1 group at a time.',
     'time': 'Usage: /time\n--> Gets the bot server\' current time. Use this to coordinate efforts and deadlines\n',
     'log': 'Usage: /log\n--> Gets you the 5 most recent announcements. The most recent announcement is at the bottom.',
     'vlog': 'Usage: /vlog n\n--> Gets you the n most recent announcements. The most recent announcement is at the bottom.',
@@ -19,7 +19,7 @@ description = {
 # example usage (do not terminate with newlines)
 examples = {
     'yell': 'e.g. /yell Hi everyone please come get your food!',
-    'whisper': 'e.g. /whisper cogls+vogls Hi COGLs and VOGLs, your shirts are ready!\n\ne.g. /whisper fopcomm+safety+vogls Hi guys, take note of the warm weather today!',
+    'whisper': 'e.g. /whisper cvogls Hi COGLs and VOGLs, your shirts are ready!\n\ne.g. /whisper ogls Hi all OGLs, please take note of the warm weather today!',
     'time': 'e.g. /time',
     'vlog': 'e.g. /vlog 10',
     'log': 'e.g. /log',
